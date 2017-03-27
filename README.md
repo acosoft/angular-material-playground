@@ -1,2 +1,3 @@
-# angular-material-playground
+# Angular Material Playground
+
 Learning Angular Material
