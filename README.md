@@ -1,3 +1,3 @@
 # Angular Material Playground
 
-Learning Angular Material
+Angular Material Playground
