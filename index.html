@@ -1,0 +1,702 @@
+
+<html ng-app="app">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Angular Material</title>
+
+    <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/angular_material/1.0.7/angular-material.min.css">
+    <link rel='stylesheet' href='http://fonts.googleapis.com/css?family=Roboto:400,700'>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    <script   src="https://code.jquery.com/jquery-2.2.3.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-route.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-animate.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-aria.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-messages.js"></script>
+    
+    <script src="http://ajax.googleapis.com/ajax/libs/angular_material/1.0.7/angular-material.min.js"></script>
+    
+    <style>
+        
+        html, body {
+            font-family: 'Roboto', sans-serif;
+            font-size:14px;
+            height:100%;
+            margin: 0px;
+            padding: 0px;
+        }
+        
+        .mz-page-tabs md-tab-content.ng-animate
+            { overflow: hidden; }
+            
+        .contact-row:hover
+            { background-color: rgba(158, 158, 158, 0.2); }
+            
+        .contact-row:focus, .column-contact:focus
+            { outline: none; }
+            
+        .column-contact-selected
+            { background-color: #efefef; }
+        
+        .column-contact
+            { cursor: pointer; }
+
+    </style>
+    
+  </head>
+  <body layout="column" ng-controller="MainController as main">
+  
+    <div ng-cloak ng-if="!main.isAuthenticated()" layout="row" layout-align="center center" flex>
+        
+        <md-card flex-gt-sm="40" flex-sm="65" flex-xs="90" style="margin-bottom: 100px;">
+            <md-toolbar>
+                <div class="md-toolbar-tools">
+                    <h2>{{ main.app }}</h2>
+                </div>
+            </md-toolbar>
+            <md-card-content layout="column">
+                <md-input-container>
+                    <label>Username</label>
+                    <input ng-model="main.username">
+                </md-input-container>
+                <md-input-container>
+                    <label>Password</label>
+                    <input ng-model="main.password" type="password">
+                </md-input-container>
+            </md-card-content>
+            <md-card-actions layout="row" layout-align="end center">
+                <md-button ng-click="main.login()">Login</md-button>
+            </md-card-actions>
+        </md-card>
+    </div>
+  
+    <div style="height: 100%;" layout="column" ng-cloak ng-if="main.isAuthenticated()">
+        <md-toolbar>
+            <div class="md-toolbar-tools">
+                <md-button class="md-icon-button" ng-click="main.toggleSidebar()" aria-label="Settings">
+                    <md-icon class="material-icons">menu</md-icon>
+                </md-button>
+                <h1 flex>{{ main.app }}</h1>
+                
+                <md-menu>
+                    <md-button class="md-icon-button" ng-click="$mdOpenMenu(ev);">
+                        <md-icon>account_box</md-icon>
+                    </md-button>
+                    <md-menu-content width="6">
+                        <md-content layout-padding>
+                            <span class="md-title md-background-accent">{{ main.user }}</span>
+                        </md-content>
+                        <md-menu-item>
+                            <md-button ng-click="main.logout()">Logout</md-button>
+                        </md-menu-item>
+                    </md-menu-content>
+                </md-menu>
+            </div>
+        </md-toolbar>
+        
+        <md-sidenav md-component-id="menu" md-is-locked-open="{{ main.isSidebarVisible }}" layout="column" class="md-whiteframe-z3">
+            <md-content flex ng-controller="MainMenuController as menu">
+                <div ng-repeat="menuItems in menu.items()">
+                    <md-toolbar><h3 class="md-toolbar-tools">{{ menuItems.desc }}</h3></md-toolbar>
+                    <md-list>
+                        <md-list-item ng-repeat="item in menuItems.items" ng-click="menu.execute(item)">
+                            {{ item.desc }}
+                        </md-list-item>
+                    </md-list>
+                </div>
+            </md-content>
+        </md-sidenav>
+        
+        <md-content class="mz-page-tabs" layout="row" flex ng-controller="TabController as tc">
+            <md-tabs md-dynamic-size md-selected="tc.selected" flex md-border-bottom md-autoselect>
+                <md-tab flex ng-repeat="tab in tc.tabs" label="{{ tab.name }}">
+                    <div class="mz-tab-content" ng-cloak ng-include="tab.view">
+                        
+                    </div>
+                </md-tab>
+            </md-tabs>
+
+        </md-content>    
+    </div>
+    
+    <script type="text/ng-template" id="phonebook">
+        
+        <div layout="row" layout-padding layout-align="center center">
+            <div flex-xs flex-gt-xs="50" style="height: 200px; margin-top: 100px; background-color: #dedede; color: white;" class="md-display-3">{{ tab.data }}</div>
+        </div>
+        
+    </script>
+    
+    <script type="text/ng-template" id="phonebook-add-contact">
+        
+            <div class="md-padding" ng-cloak ng-controller="PhonebookContactController as contact" layout="row" layout-align-gt-sm="center center">
+                <div flex flex-gt-sm="50" style="width: 100%;">
+                    <h1 class="md-headline" ng-bind="(contact.customerRef == null)?'New Contact':'Edit contact'">New Contact</h1>
+                    <div layout="column">
+                        <md-input-container>
+                            <label>First Name</label>
+                            <input ng-model="contact.customer.firstname">
+                        </md-input-container>
+                        
+                        <md-input-container>
+                            <label>Last Name</label>
+                            <input ng-model="contact.customer.lastname">
+                        </md-input-container>
+                        
+                        <md-input-container>
+                            <label>Address</label>
+                            <input ng-model="contact.customer.address">
+                        </md-input-container>
+                        
+                        <md-input-container>
+                            <label>Postal Code</label>
+                            <input ng-model="contact.customer.postalcode">
+                        </md-input-container>
+                        
+                        <md-input-container>
+                            <label>Location</label>
+                            <input ng-model="contact.customer.city">
+                        </md-input-container>
+                        
+                        <md-input-container>
+                            <label>Phone number</label>
+                            <input ng-model="contact.customer.phone">
+                        </md-input-container>
+                        
+                        <md-input-container>
+                            <label>Email</label>
+                            <input ng-model="contact.customer.email">
+                        </md-input-container>
+                        
+                        <div layout="row" layout-align="end center">
+                            <md-button ng-click="contact.save()" class="md-primary">Save</md-button>
+                            <md-button ng-click="contact.cancel()">Cancel</md-button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        
+    </script>
+    
+    <script type="text/ng-template" id="phonebook-contacts">
+        
+        <div class="md-padding" ng-controller="PhonebookContactsController as phonebook">
+            
+            <h1 hide show-gt-xs ng-hide="phonebook.selectedCount() > 0" style="padding-left: 16px;" class="md-headline">Contacts</h1>
+            <h1 hide-gt-xs style="padding-left: 16px;" class="md-headline">Contacts</h1>
+            
+            <div hide-xs ng-show="phonebook.selectedCount() > 0" layout="row" layout-align="start center" style="padding: 12px 0px 12px 16px;">
+                <div flex>{{ phonebook.selectedCount() }} contacts selected</div> 
+                <div>
+                    <md-button class="md-icon-button" ng-click="phonebook.edit()"><md-icon>mode_edit</md-icon></md-button>
+                    <md-button class="md-icon-button" ng-click="phonebook.delete()"><md-icon>delete</md-icon></md-button>
+                </div>
+            </div>
+            
+
+            <div layout="column" hide-gt-sm ng-repeat="contact in phonebook.contacts()">
+                
+                <md-divider>
+                
+                <div ng-show="contact.selected">
+                    <div layout="row" layout-align="center center">
+                        <md-button ng-click="phonebook.edit(contact)">Edit</md-button>
+                        <md-button ng-click="phonebook.delete(contact)">Delete</md-button>
+                     </div>
+                </div>
+                
+                <div class="column-contact" ng-class="{ 'column-contact-selected': contact.selected }" flex style="margin: 1px 0px; padding: 16px 16px" ng-click="contact.selected = !contact.selected; phonebook.checkSelection();">
+                    <div style="margin-bottom: 16px;" class="md-title">{{ contact.firstname }} {{ contact.lastname }}</div>
+                    
+                    <div layout="row" ng-show="contact.address || contact.postalcode || contact.city">
+                        <div>
+                            <md-icon>home</md-icon>
+                        </div>
+                        <div layout="row" layout-align="start center" flex style="padding-left: 8px;">
+                            <div ng-show="contact.address">{{ contact.address }}</div>
+                            <div flex ng-show="contact.postalcode || contact.city">
+                                <span ng-show="contact.address">, </span>{{ contact.postalcode }} {{ contact.city }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 8px;" ng-show="contact.phone">
+                        <md-icon style="margin-right: 8px;">call</md-icon>{{ contact.phone }}
+                    </div>
+                    
+                    <div style="margin-top: 8px;" ng-show="contact.email">
+                        <md-icon style="margin-right: 8px;">email</md-icon>{{ contact.email }}
+                    </div>
+                </div>
+
+            </div>
+
+            
+            <div hide show-gt-sm>
+                <div class="md-subhead" style="font-weight: bold;">
+                    <md-divider>
+                    <div layout="row">
+                        <div layout="row" layout-align="left center">
+                            <md-checkbox style="margin: 16px;" aria-label="Select All" ng-model="phonebook.selectedAll" ng-change="phonebook.selectAll()">
+                        </div>
+                        <div flex layout="row" layout-align="left center" layout-padding>Name</div>
+                        <div flex="15" layout="row" layout-align="left center" layout-padding>Address</div>
+                        <div flex="15" layout="row" layout-align="left center" layout-padding>Location</div>
+                        <div flex="15" layout="row" layout-align="left center" layout-padding>Phone</div>
+                        <div flex="15" layout="row" layout-align="left center" layout-padding>Email</div>
+                    </div>                
+                </div>
+                <div ng-repeat="contact in phonebook.contacts()">
+                    <md-divider>
+                    <div layout="row" class="contact-row">
+                        <div layout="row" layout-align="left center">
+                            <md-checkbox aria-label="Select" ng-model="contact.selected" ng-change="phonebook.checkSelection()" style="margin: 16px;">
+                        </div>
+                        <div flex layout="row" layout-align="left center" layout-padding>{{ contact.firstname }} {{ contact.lastname }}</div>
+                        <div flex="15" layout="row" layout-align="left center" layout-padding>{{ contact.address }}</div>
+                        <div flex="15" layout="row" layout-align="left center" layout-padding>{{ contact.postalcode }} {{ contact.city }}</div>
+                        <div flex="15" layout="row" layout-align="left center" layout-padding>{{ contact.phone }}</div>
+                        <div flex="15" layout="row" layout-align="left center" layout-padding>{{ contact.email }}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div ng-show="phonebook.total() == 0">
+                <md-divider>
+                <div layout="row" class="contact-row">
+                    <div layout="row" layout-align="left center" style="margin: 16px;">
+                        Empty list!
+                    </div>
+                </div>
+            </div>
+            
+            <md-divider>
+        </div>
+        
+    </script>
+  
+    <script>
+    
+         angular.module('auth', [])
+            .service('AuthService', function() {
+                
+                var self = this;
+                
+                self.username = 'demo';
+                self.user = 'Aleksandar Zgonjan';
+                
+                self.authenticated = true;
+                
+                self.isAuthenticated = function() {
+                    return self.authenticated;
+                }
+                
+                self.login = function(data) {
+                    if(data.username == 'demo' && data.password == 'demo') {
+                        self.authenticated = true;
+                        self.username = data.username;
+                        return true;
+                    } else {
+                        self.authenticated = false;
+                        return false;
+                    }
+                }
+                
+                self.logout = function() {
+                    self.authenticated = false;
+                    self.username = null;
+                }
+            });
+            
+        angular.module('menu', [])
+            .service('MainMenu', function() {
+                
+                var self = this;
+                
+                self.items = [];
+                
+                self.register = function(item) {
+                    self.items.push(item);
+                }
+                
+            }).controller('MainMenuController', function(MainMenu) {
+                
+                var self = this;
+                
+                self.items = function() {
+                    return MainMenu.items;
+                }
+                
+                self.execute = function(item) {
+                    item.callback();
+                }
+                
+            });
+            
+        angular.module('tabs', [])
+            .service('TabServices', function($rootScope, $mdSidenav) {
+                var self = this;
+                
+                self.add = function(tab) {
+                    $rootScope.$broadcast('tabs.add', { tab: tab });
+                    $mdSidenav('menu').close();
+                };
+                
+                self.close = function() {
+                    $rootScope.$broadcast('tabs.close');
+                }
+                
+                self.rename = function(name) {
+                    $rootScope.$broadcast('tabs.rename', name);
+                }
+                
+            }).controller('TabController', function(TabServices, $scope) {
+                
+                var self = this;
+                
+                self.tabs = [ {name: 'one', view: 'phonebook', data: 1 }, { name: 'two', view: 'phonebook', data: 2 }, { name: 'three', view: 'phonebook', data: 3 } ];
+                self.selected = null;
+                
+                $scope.$on('tabs.add', function(event, args) {
+                    
+                    var add = true;
+                    
+                    if(args.tab.single) {
+                        
+                        angular.forEach(self.tabs, function(value, index) {
+                            if(value.name == args.tab.name) {
+                                self.selected = index;
+                                add = false;
+                            }
+                        });
+                    };
+                    
+                    if(add) {
+                        self.tabs.push(args.tab);  
+                    }
+                });
+                
+                $scope.$on('tabs.close', function() {
+                    
+                    self.tabs.splice(self.selected, 1);
+                    self.selected++;
+                    
+                });
+                
+                $scope.$on('tabs.rename', function(event, args) {
+                    self.tabs[self.selected].name = args;
+                });
+            });
+            
+        angular.module('app', ['tabs', 'auth', 'menu', 'ngAnimate', 'ngRoute', 'ngMessages', 'ngMaterial'])
+            .config(function($mdThemingProvider) {
+              $mdThemingProvider.theme('default')
+                .primaryPalette('lime')
+                .accentPalette('blue');
+            }).controller('MainController', function($mdSidenav, AuthService, MainMenu, TabServices) {
+                var self = this;
+                
+                self.app = "Material Playground";
+                self.username = 'demo';
+                self.password = 'demo';
+                self.user = 'Aleksandar Zgonjan';
+                
+                self.toggleSidebar = function() {
+                    $mdSidenav('menu').toggle();
+                }
+                
+                self.isAuthenticated = function() {
+                    return AuthService.isAuthenticated();
+                }
+                
+                self.login = function() {
+                    if(AuthService.login({ username: self.username, password: self.password })) {
+                        self.user = AuthService.user;
+                    } else {
+                        self.username = 'demo';
+                    }
+                }
+                
+                self.logout = function() {
+                    AuthService.logout();
+                }
+                
+                MainMenu.register({
+                    desc: self.user,
+                    items: [ { desc: 'Logout', callback: self.logout } ]
+                });
+                
+            });
+            
+        angular.module('app')
+            .service('PhonebookServices', function(TabServices, $rootScope) {
+                
+                var self = this;
+                
+                self.customers = [ 
+                    { firstname: 'Aleksandar', lastname: 'Zgonjan', address: 'Baretićevo 7c', postalcode: 51000, city: 'Rijeka', phone: '+385959108324', email: 'acosoft@gmail.com' }, { firstname: 'Dexter' } ];
+                self.count = 1;
+                
+                self.save = function(customer) {
+                    self.customers.push(customer);
+                    $rootScope.$broadcast('phonebook.changed');
+                }
+                
+                self.rename = function(customer) {
+                    if(customer) {
+                        var name = self.fullname(customer, 'Edit customer');
+                        TabServices.rename(name);
+                    } else {
+                        TabServices.rename('New Contact ' + self.count++);    
+                    }
+                }
+                
+                self.contacts = function() {
+                    return self.customers;
+                }
+                
+                self.fullname = function(customer, fallback) {
+                    var name = '';
+                    
+                    angular.forEach([customer.firstname, customer.lastname], function(item) {
+                        if(item && item.trim() != '') {
+                            name += item + ' ';
+                        }
+                    })
+                    
+                    if(name.trim() == '') {
+                        return fallback;
+                    } else {
+                        return name;
+                    }
+                };
+
+            }).controller('PhonebookContactController', function($scope, TabServices, PhonebookServices, $mdToast) {
+                
+                var self = this;
+                
+                function createCustomer() {
+                    
+                    return {
+                        firstname: '',
+                        lastname: '',
+                        address: '',
+                        postalcode: '',
+                        city: '',
+                        phone: '',
+                        email: ''
+                    };
+                }
+                
+                if($scope.$parent.tab.data) {
+                    var cust = $scope.$parent.tab.data;
+                    self.customerRef = cust;
+                    
+                    self.customer = {
+                        firstname: cust.firstname,
+                        lastname: cust.lastname,
+                        address: cust.address,
+                        postalcode: cust.postalcode,
+                        city: cust.city,
+                        phone: cust.phone,
+                        email: cust.email
+                    }
+                    
+                    self.save = function() {
+                        cust.firstname = self.customer.firstname;
+                        cust.lastname = self.customer.lastname;
+                        cust.address = self.customer.address;
+                        cust.postalcode = self.customer.postalcode;
+                        cust.city = self.customer.city;
+                        cust.phone = self.customer.phone;
+                        cust.email = self.customer.email;
+                        
+                        var name = PhonebookServices.fullname(self.customer, 'Contact');
+                        PhonebookServices.rename(cust);
+                        
+                        if(cust.deleted == true) {
+                            
+                            cust.deleted = false;
+                            PhonebookServices.save(cust);
+                            
+                            name += ' created';
+                            
+                        } else {
+                            name += ' changed';
+                        }
+                        
+                        $mdToast.show(
+                            $mdToast.simple()
+                                .textContent(name)
+                                .position('top right')
+                                .hideDelay(3000)
+                        );
+                    }
+                } else {
+                    self.customer = createCustomer();    
+                    
+                    self.save = function() {
+                        PhonebookServices.save(self.customer);
+                        
+                        $mdToast.show(
+                            $mdToast.simple()
+                                .textContent(self.customer.firstname + ' ' + self.customer.lastname + ' added to contacts')
+                                .position('top right')
+                                .hideDelay(3000)
+                        );
+                        
+                        self.customer = createCustomer();
+                        
+                        PhonebookServices.rename();
+                    }
+                }
+                
+                self.cancel = function() {
+                    TabServices.close();
+                }
+                  
+            }).controller('PhonebookContactsController', function(PhonebookServices, TabServices, $scope, $timeout) {
+                
+                var self = this;
+                
+                self.contacts = function() {
+                    return PhonebookServices.contacts();
+                }
+                
+                self.selectedCount = function() {
+                    var contacts = PhonebookServices.contacts();
+                    var count = 0;
+                    
+                    angular.forEach(contacts, function(item) {
+                        if(item.selected) {
+                            count++;
+                        }
+                    });
+                    
+                    return count;
+                }
+                
+                self.open = function(item, focus) {
+                    
+                    var name = PhonebookServices.fullname(item, 'Edit contact');
+                    TabServices.add({ name: name, view: 'phonebook-add-contact', data: item, single: true });
+                }
+                
+                self.edit = function(contact) {
+                    var contacts = PhonebookServices.contacts();
+                    
+                    if(contact) {
+                        self.open(contact);
+                    } else {
+                        var count = 0;
+                        
+                        angular.forEach(contacts, function(item) {
+                            if(item.selected) {
+                                
+                                $timeout(function() {
+                                    self.open(item);
+                                }, 600 * count++)
+                            }
+                        });
+                    }
+                }
+                
+                self.delete = function(contact) {
+
+                    var contacts = PhonebookServices.contacts();
+                    var items = contacts.splice(0, contacts.length);
+                    
+                    angular.forEach(items, function(item) {
+                        var remove = false;;
+                        
+                        if(contact) {
+                            remove = item == contact;
+                        } else {
+                            remove = item.selected == true;
+                        }
+                        
+                        if(remove) {
+                            item.deleted = true;
+                        } else {
+                            contacts.push(item);
+                        }
+                    });
+                    
+                    self.checkSelection();
+                }
+                
+                self.total = function() {
+                    return PhonebookServices.contacts().length;
+                }
+                
+                self.selectedAll = false;
+                
+                self.selectAllChecked = function() {
+                    var count = self.selectedCount();
+                    var total = PhonebookServices.contacts().length;
+                    
+                    return count == total && total > 0;
+                }
+                
+                self.checkSelection = function() {
+                    self.selectedAll = self.selectAllChecked();
+                }
+                
+                self.selectAll = function() {
+                    var contacts = PhonebookServices.contacts();
+
+                    angular.forEach(contacts, function(item) {
+                        item.selected = self.selectedAll;
+                    });
+                }
+                
+                $scope.$on('phonebook.changed', function() {
+                    self.checkSelection(); 
+                });
+                
+            }).run(function(MainMenu, TabServices, AuthService, $mdSidenav, PhonebookServices) {
+                var self = this;
+                
+                self.addContact = function() {
+                    var count = PhonebookServices.count++;
+                    
+                    TabServices.add({ name: 'New Contact ' + count, view: 'phonebook-add-contact' })
+                }
+                
+                self.listContacts = function() {
+                    TabServices.add({ name: 'Contacts', view: 'phonebook-contacts', single: true });
+                }
+                
+                self.dynamic = 3;
+                
+                self.addDynamicTab = function() {
+                    dynamic++;
+                    
+                    TabServices.add({ name: 'Tab ' + dynamic, view: 'phonebook', data: dynamic }) 
+                }
+                
+                self.closeSelectedTab = function() {
+                    TabServices.close();
+                    $mdSidenav('menu').close();
+                }
+                
+                MainMenu.register({
+                    desc: 'Dynamic tabs',
+                    items: [ { desc: 'Add tab', callback: self.addDynamicTab }, { desc: 'Close selected', callback: self.closeSelectedTab } ]
+                });
+                
+                MainMenu.register({
+                    desc: 'Phonebook',
+                    items: [ 
+                        { desc: 'Add Contact', callback: self.addContact }, 
+                        { desc: 'List contacts', callback: self.listContacts }
+                    ]
+                });
+                
+            });
+        
+    </script>
+  </body>
+</html>
